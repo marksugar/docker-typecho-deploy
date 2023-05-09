@@ -1,0 +1,58 @@
+server {
+	listen 80;
+	server_name www.yuming.com yuming.com;
+  if ($scheme = 'http' ) { rewrite ^(.*)$ https://$host$1 permanent; }
+	index index.html index.htm index.php default.html default.htm default.php;
+}
+server {
+    listen       443 ssl;
+    server_name   www.yuming.com yuming.com;
+    # error_log /data/logs/error_nginx.log debug;
+    access_log /data/logs/_443.log upstream2;
+    root /data/wwwroot/typecho;
+    index index.html index.htm index.php default.html default.htm default.php;
+
+    # limit_conn conn_one 20;
+    # limit_conn perserver 20;
+    # limit_rate 100k;
+    # #limit_req zone=anti_spider burst=10 nodelay;
+    # limit_req zone=req_one burst=5 nodelay;
+
+    index index.html index.htm index.php default.html default.htm default.php;
+
+    # include fangzhuru.conf;
+    
+    ssl_certificate   /etc/nginx/cert/9557818_www.linuxea.com.pem;
+    ssl_certificate_key  /etc/nginx/cert/9557818_www.linuxea.com.key;
+
+
+    if (!-e $request_filename) {
+      rewrite ^(.*)$ /index.php$1 last;
+    }
+    location ~ [^/]\.php(/|$){
+      fastcgi_pass  172.200.10.101:9000;
+      fastcgi_index index.php;
+      include fastcgi.conf;
+    }
+
+    location ~* ^.+\.(ico|gif|jpg|jpeg|png)$ {
+      access_log   off;
+      expires      30d;
+    }
+
+    location ~* ^.+\.(css|js|txt|xml|swf|wav)$ {
+      access_log   off;
+      expires      24h;
+    }
+
+    location ~* ^.+\.(html|htm)$ {
+      expires      1h;
+    }
+    location ~* ^.+\.(eot|ttf|otf|woff|svg)$ {
+      access_log   off;
+      expires max;
+    }
+    location ~ /\.{
+      deny all;
+    }
+}

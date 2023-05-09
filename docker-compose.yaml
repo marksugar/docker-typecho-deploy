@@ -1,0 +1,75 @@
+version: '3'
+services:
+  nginx:
+    image: registry.cn-zhangjiakou.aliyuncs.com/marksugar/nginx:1.23.4
+    container_name: nginx
+    restart: always
+    links:
+      - "php-fpm:php-fpm"
+    volumes:
+    - ./nginx/:/etc/nginx/
+    - ./wwwroot:/data/wwwroot
+    - ./logs/:/data/logs/
+    ports:
+    - "40080:40080"
+    - "80:80"
+    - "443:443"
+    - "88:88"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50M"    
+    networks:
+      linuxea:
+        ipv4_address: 172.200.10.100
+  php-fpm:
+    image: registry.cn-zhangjiakou.aliyuncs.com/marksugar-k8s/php:7.4.33
+    container_name: php-fpm
+    restart: always
+    # links:
+    #   - "mysql:mysql"
+    volumes:
+    - ./wwwroot:/data/wwwroot
+    - ./php.conf:/usr/local/etc/php-fpm.d/php.conf
+    ports:
+    - "9000:9000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50M"    
+    networks:
+      linuxea:
+        ipv4_address: 172.200.10.101
+  # mysql:
+  #   container_name: mysql
+  #   image: registry.cn-hangzhou.aliyuncs.com/marksugar/mysql:8.0.29-debian
+  #   restart: always
+  #   security_opt:
+  #     - seccomp:unconfined
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=root
+  #     - MYSQL_ROOT_PASSWORD=PASSWORDABCD
+  #     - MYSQL_DATABASE=typecho
+  #     - MYSQL_USER=typecho
+  #     - MYSQL_PASSWORD=PASSWORDABCD
+  #   volumes:
+  #   - /etc/localtime:/etc/localtime:ro
+  #   - ./mysql/typecho/data:/var/lib/mysql
+  #   - ./mysql/typecho/file:/var/lib/mysql-files
+  #   - ./my.cnf:/etc/mysql/my.cnf
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "50M"
+  #   ports:
+  #   - "3306:3306"
+  #   networks:
+  #     linuxea:
+  #       ipv4_address: 172.200.10.102
+
+networks:
+  linuxea:
+    ipam:
+     driver: default
+     config:
+       - subnet: 172.200.10.0/24
